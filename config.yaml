@@ -1,0 +1,40 @@
+# 供应商表格抓取 —— 唯一配置源
+# 所有脚本从这里读路径/标识，禁止在代码里写死。改环境只改这里。
+# 语法：key: value（简单键值，值里的反斜杠/冒号无需转义）
+
+# ---- Python ----
+python_exe: C:/Users/TEKYKOO/.workbuddy/binaries/python/envs/default/Scripts/python.exe
+
+# ---- 浏览器（统一单实例 CDP 9333）----
+chrome_exe: C:/Program Files/Google/Chrome/Application/chrome.exe
+chrome_flags: --no-proxy-server --remote-debugging-port=9333 --user-data-dir=C:\Chrome-Direct-Test
+cdp_port: 9333
+cdp_host: 127.0.0.1
+# 至尊宝扩展 ID（本机解压加载，用于在线检测；留空则只做截图检测）
+zhizunbao_ext_id: kcbibcclghjmmhlbeocbemccglagfdik
+
+# ---- 表格 ----
+master_xlsx: E:/影刀表格保存/总表.xlsx
+backup_dir: E:/影刀表格保存/备份
+workspace_dir: E:/影刀表格保存/供应商抓取工作区
+
+# ---- 金山共享表 ----
+kdocs_url: https://www.kdocs.cn/l/cdmUStQWzNen
+kdocs_file_id: R9WyNygaJrMDRfpUadTHrxEmzqeMPMKrY
+kdocs_worksheet_id: 1
+kdocs_backup_drive_id: 2640171226
+kdocs_backup_parent_id: 0
+kdocs_price_markup: 1.13
+kdocs_price_step: 5
+kdocs_row_height_twip: 2025
+kdocs_data_start_row: 4          # 0-based，第5行=4
+
+# ---- 护栏与业务规则 ----
+min_coverage_ratio: 0.9
+price_purge_above: 700
+price_purge_below: 200          # 低于此价剔除（引流/邮费/吧唧等非扭蛋，2026-11-22 加）
+title_must_contain: 扭蛋
+clean_strip_prefix: 日本正版
+
+# ---- 公众号/其他（预留）----
+notify_on_gate: true

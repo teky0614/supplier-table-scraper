@@ -1,0 +1,24 @@
+# 临时采集数据 / 截图 / 剪贴板原文（含业务数据，禁止入库）
+logs/
+*.png
+*.jpg
+clipboard_raw.txt
+guard_tmp.png
+
+# 工作区产物（run 目录含备份与原始表，体积大且含数据）
+run_*/
+总表_测试.xlsx
+总表_基准.xlsx
+总表_备份_*.xlsx
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# 本地环境
+.env
+*.log
+.DS_Store
+Thumbs.db
