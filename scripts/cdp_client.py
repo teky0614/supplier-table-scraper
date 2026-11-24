@@ -52,6 +52,27 @@ DEFAULT_PORT = 9222
 DEFAULT_HOST = "127.0.0.1"
 
 
+def config_cdp_port(default=DEFAULT_PORT):
+    """从技能根目录 config.yaml 读 cdp_port，作为默认端口（v1.0.1）。
+
+    便于临时脚本直接 CDPClient() 即连到技能专用端口（9333），
+    无需每次显式传 port。读不到配置时退回 default，保持模块独立可用。
+    """
+    try:
+        cfg = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config.yaml")
+        if os.path.exists(cfg):
+            with open(cfg, encoding="utf-8") as f:
+                for line in f:
+                    s = line.strip()
+                    if s.startswith("cdp_port:"):
+                        v = s.split(":", 1)[1].split("#", 1)[0].strip().strip('"').strip("'")
+                        if v:
+                            return int(v)
+    except (OSError, ValueError):
+        pass
+    return default
+
+
 class CDPError(Exception):
     """CDP 相关错误。"""
 
@@ -194,9 +215,9 @@ class WSClient:
 # CDP 客户端
 # --------------------------------------------------------------------------
 class CDPClient:
-    def __init__(self, host=DEFAULT_HOST, port=DEFAULT_PORT, timeout=15.0):
+    def __init__(self, host=DEFAULT_HOST, port=None, timeout=15.0):
         self.host = host
-        self.port = port
+        self.port = config_cdp_port() if port is None else port
         self.timeout = timeout
         self.ws = None
         self.target_id = None
@@ -513,7 +534,8 @@ def _print_json(obj):
 
 def build_parser():
     p = argparse.ArgumentParser(prog="cdp.py", description="零依赖 Chrome CDP 命令行客户端")
-    p.add_argument("--port", type=int, default=DEFAULT_PORT, help="CDP 端口，默认 %d" % DEFAULT_PORT)
+    p.add_argument("--port", type=int, default=config_cdp_port(),
+                   help="CDP 端口，默认读 config.yaml 的 cdp_port（无配置则 %d）" % DEFAULT_PORT)
     p.add_argument("--host", default=DEFAULT_HOST, help="CDP 主机，默认 %s" % DEFAULT_HOST)
     p.add_argument("--target", help="指定标签页 targetId")
     p.add_argument("--url-contains", help="按 URL 关键字挑选标签页")

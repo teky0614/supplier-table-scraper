@@ -129,7 +129,11 @@ def cmd_stage5_payload(a):
 
 
 def cmd_stage6_verify(a):
-    real = a.get("real") or load_config().get("master_xlsx", "")
+    # 验收对照物默认取「同步后基准快照」(与测试副本同维度)，而非真表。
+    # 落地前真表尚未覆盖，维度必然不一致；基准快照才是正确对照物。
+    # 落地后基准快照 == 真表内容，仍可继续用；显式 real= 可强制覆盖。
+    base = os.path.join(a["run"], "总表_基准.xlsx")
+    real = a.get("real") or (base if os.path.exists(base) else load_config().get("master_xlsx", ""))
     call("table_ops.py", ["verify", "real=" + real,
                           "test=" + os.path.join(a["run"], "总表_测试.xlsx"),
                           "n=" + a["n"]],

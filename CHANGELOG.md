@@ -2,6 +2,19 @@
 
 本项目遵循语义化版本（SemVer）：`MAJOR.MINOR.PATCH`。
 
+## v1.0.1 (2026-11-24)
+
+修复 v1.0.0 全流程测试中发现的 4 处「已知待固化问题」，均已回归验证（用真实 run 产物，不碰真表）。
+
+### 修复
+- **`stage4-mark` 兼容对象数组 `titles.json`**：新增 `norm_titles()`，统一接受 ① 纯字符串数组 ② `{"titles":[...]}` ③ stage2 diff 直接生成的对象数组 `[{row,title,clean,link,cost}]`；对象项按 title/clean/clean_title/name 取值。修复前传对象数组会报 `unhashable type: dict`。
+- **`stage6-verify` 默认对照基准快照**：不传 `real=` 时优先用 run 目录的 `总表_基准.xlsx`（与测试副本同维度），落地前不再误报维度不一致；落地后基准==真表仍可复用；显式 `real=` 可强制覆盖。
+- **`cdp_client` 默认端口读 config**：`CDPClient()` 无参实例化时自动从 `config.yaml` 的 `cdp_port` 取端口（本机 9333），临时脚本不再需要显式传 port；读不到配置退回 9222，模块独立性不受影响；命令行 `--port` 默认值同步。
+- **共享表 diff 行号基准明确化**：`diff_kdocs` 输出新增 `row_basis` 说明与 `kdocs_only[].origin_row`（=row-1，0-based，直接填 kdocs `row_from/row_to`），并在终端打印 `kdocs_only_origin_rows` 提示；`references/04_kdocs_write.md` 同步更新行号规则。删前仍须逐行重读核对。
+
+### 变更
+- `references/04_kdocs_write.md`：行号说明由「diff 可能偏 1」改为明确两套基准 + 优先用 `origin_row`。
+
 ## v1.0.0 (2026-11-24)
 
 首次版本化发布。由三个旧技能整合重写的全链路技能。
@@ -28,8 +41,9 @@
 ### 弃用
 - 旧技能 `pifa-xie-gongxiangbiao`、`供应商全店抓取`、`采集同步共享表` 已标记 DEPRECATED，保留作知识备份，不再调用。
 
-### 已知待固化问题（本次全流程测试发现，已就地绕过，未改脚本）
-- `stage4-mark` 的 `titles.json` 需纯字符串数组。
-- `stage6-verify` 默认对照真表，落地前会报维度不一致（落地后再跑才过），落地前应传 `real=<基准>`。
-- 临时脚本读图 URL 需显式指定 9333 端口。
-- 共享表 diff 的 `row` 是 1-based，删行要 -1 并逐行重读核对。
+### 已知待固化问题（本次全流程测试发现，v1.0.0 中就地绕过）
+> 以下 4 项已在 **v1.0.1 修复**，保留记录仅为变更溯源。
+- `stage4-mark` 的 `titles.json` 需纯字符串数组。→ v1.0.1 已兼容对象数组。
+- `stage6-verify` 默认对照真表，落地前会报维度不一致（落地后再跑才过），落地前应传 `real=<基准>`。→ v1.0.1 已默认用基准快照。
+- 临时脚本读图 URL 需显式指定 9333 端口。→ v1.0.1 已让 `CDPClient()` 默认读 config。
+- 共享表 diff 的 `row` 是 1-based，删行要 -1 并逐行重读核对。→ v1.0.1 已新增 `origin_row`（0-based）。

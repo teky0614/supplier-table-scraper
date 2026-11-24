@@ -345,11 +345,37 @@ def cmd_sync_apply(a):
 
 
 # ---------------- mark ----------------
+def norm_titles(raw):
+    """把标题清单归一化为字符串数组。
+
+    兼容三种输入（2026-11-24 v1.0.1）：
+      1) ["标题A", "标题B"]                      纯字符串数组（原约定）
+      2) {"titles": ["标题A", ...]}              带 titles 键的对象
+      3) [{"row":2,"title":"标题A","clean":"..."}] 对象数组（stage2 diff 直接生成）
+    对象项按 title / clean / clean_title / name 顺序取第一个非空值。
+    """
+    if isinstance(raw, dict):
+        raw = raw.get("titles", raw.get("clean_titles", []))
+    out = []
+    for t in raw:
+        if isinstance(t, dict):
+            pick = next((t.get(k) for k in ("title", "clean", "clean_title", "name")
+                         if t.get(k) not in (None, "")), None)
+            if pick is None:
+                emit("E024", "titles 对象项缺 title/clean/name 字段：%r" % t)
+                raise SystemExit(2)
+            out.append(s(pick))
+        else:
+            out.append(s(t))
+    return out
+
+
 def cmd_mark(a):
     path = a["file"]
-    titles = json.load(open(a["titles"], encoding="utf-8"))
-    if isinstance(titles, dict):
-        titles = titles["titles"]
+    titles = norm_titles(json.load(open(a["titles"], encoding="utf-8")))
+    if not titles:
+        emit("E024", "标题清单为空")
+        raise SystemExit(2)
     if len(titles) != len(set(titles)):
         emit("E024", "标题清单有重复，先去掉重复项")
         raise SystemExit(2)
@@ -459,18 +485,25 @@ def cmd_diff_kdocs(a):
     m, _, _ = resolve(ws, ("clean",))
     loc = [(r["row"], s(r["clean"])) for r in records(ws, m) if not is_protected(r.get("clean"))]
     kset, lset = set(t for _, t in kd), set(t for _, t in loc)
+    # 行号基准（v1.0.1 修正）：kdocs MCP 的 row_from/row_to/originRow 都是 0-based。
+    # 这里 row 保留 1-based（给人看 / 与本地表行号一致），另出 origin_row=row-1 供直接删行。
     out = {
+        "row_basis": "row=1-based(Excel行号); origin_row=0-based(直接填 kdocs row_from/row_to)",
         "kdocs_rows": len(kd), "local_rows": len(loc),
         "local_only": [{"row": r, "title": t} for r, t in loc if t not in kset],
-        "kdocs_only": [{"row": r, "title": t} for r, t in kd if t not in lset],
+        "kdocs_only": [{"row": r, "origin_row": r - 1, "title": t}
+                       for r, t in kd if t not in lset],
         "dup_kdocs": [t for t, c in Counter(t for _, t in kd).items() if c > 1],
         "dup_local": [t for t, c in Counter(t for _, t in loc).items() if c > 1],
     }
     json.dump(out, open(a["out"], "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(json.dumps({"ok": True, "out": a["out"], "local_only": len(out["local_only"]),
                       "kdocs_only": len(out["kdocs_only"]),
+                      "kdocs_only_origin_rows": [x["origin_row"] for x in out["kdocs_only"]],
                       "dup_kdocs": len(out["dup_kdocs"]),
-                      "dup_local": len(out["dup_local"])}, ensure_ascii=False))
+                      "dup_local": len(out["dup_local"]),
+                      "hint": "删共享表行用 kdocs_only[].origin_row (0-based)，删前仍须逐行重读核对"},
+                     ensure_ascii=False))
 
 
 # ---------------- clean ----------------

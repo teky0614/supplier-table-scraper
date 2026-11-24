@@ -34,7 +34,7 @@ sheet.delete_range_data {"file_id":<id>,"worksheet_id":1,
 - ⚠️ **`range_data` 必须是数组 `[{...}]`**，写成对象 `{...}` 会报 `proto: syntax error (line 1:39): unexpected token {`（2026-11-22 实测）。
 - **自下而上**删，避免行号漂移。
 - 每删前重读该行 B 列，与清单完全一致才删。
-- ⚠️ **行号以 `get_range_data` 实测的 `originRow` 为准**，`diff_kdocs` 报的 row 可能偏 1（2026-11-22 实测差1）——删前必须重读该行确认，不能直接用 diff 行号。
+- ⚠️ **行号基准（v1.0.1 起明确）**：`diff_kdocs` 输出两套行号——`row` 是 1-based（Excel 行号，给人看）、`origin_row = row-1` 是 0-based，直接填 `row_from/row_to`。删行优先用 `origin_row`；**删前仍必须重读该行 B 列核对标题**（历史曾因混用两套基准误删相邻行）。`get_range_data` 返回的 `originRow` 是 0-based，与 `origin_row` 同一基准。
 - 删后读相邻两行确认正确上移（`get_sheets_info` 的 rowTo 可能不立即更新，以内容为准）。
 - 备份用 `save_as_file`，参数是 `dst_drive_id`/`dst_parent_id`（不是 drive_id/parent_id），drive 用个人云盘 2640171226（不要用共享表自己的盘）。
 
