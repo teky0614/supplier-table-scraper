@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import openpyxl
 from openpyxl.styles import PatternFill, Font
 from collections import Counter
-from common import load_config, cfg_float, cfg_int, emit, out as emit_out
+from common import load_config, cfg_float, cfg_int, emit, out as emit_out, norm_color
 
 # 表头别名：从左到右优先。同一个 key 命中多个不同列 -> 直接报错，要求人工确认。
 ALIASES = {
@@ -422,7 +422,7 @@ def cmd_fill(a):
         if cur != s(f["title"]):
             emit("E023", "第%d行标题不符：%r != %r" % (r, cur, f["title"]))
             raise SystemExit(2)
-        ws.cell(r, m["color"]).value = s(f["color"])
+        ws.cell(r, m["color"]).value = norm_color(f["color"])
         ws.cell(r, m["dia"]).value = s(f["dia"])
         ws.cell(r, m["img"]).value = s(f["img"])
         c = ws.cell(r, m["jan"])

@@ -4,7 +4,7 @@
 设计目标：所有脚本共享同一套配置源和错误语义，禁止各自硬编码。
 配置读取零第三方依赖（不引 pyyaml），解析 config.yaml 的简单 key: value 行。
 """
-import os, sys, json, io
+import os, sys, json, io, re
 
 # 让 Windows 控制台正确打印中文
 try:
@@ -95,6 +95,17 @@ def write_json(path, obj, indent=1):
 
 def kv_args(argv):
     return dict(a.split("=", 1) for a in argv if "=" in a)
+
+
+def norm_color(v):
+    """SKU 袋规只保留纯数字（2026-11-26 用户规则）。
+
+    "原袋20个" -> "20"；"30" -> "30"；"原袋120个/整箱" -> "120"。
+    取字符串中第一段连续数字；无数字时返回原值并交给上层校验（不应静默吞掉）。
+    """
+    s = str(v).strip()
+    m = re.search(r"\d+", s)
+    return m.group(0) if m else s
 
 
 def check_deps():

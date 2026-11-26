@@ -153,7 +153,8 @@ R="C:/Users/TEKYKOO/.workbuddy/skills/供应商表格抓取/scripts/run.py"
 "$PY" "$R" stage4-mark run=<run> titles=<titles.json>   # 置顶标红到第2~(N+1)行
 ```
 - 每个链接只打开一次：先看是否下架 → 截图识 SKU 袋规/直径 → 取广告图 URL → 下载图片经 `jan_verify.py` 抓 JAN。全程不读 DOM 文字。
-- 字段 JSON：`[{"row":2,"title":清洗后标题,"color":...,"dia":...,"jan":...,"img":...,"cost":成本}]`
+- **袋规/直径只存纯数字**（2026-11-26 用户规则）：`原袋20个`→`20`、`Φ65mm`→`65`。总表 G 列与共享表 C 列必须都是纯数字；`common.norm_color()` 在回填/写共享表时兜底提取第一段数字。
+- 字段 JSON：`[{"row":2,"title":清洗后标题,"color":"20","dia":"65","jan":...,"img":...,"cost":成本}]`
 - 下架款不写 JSON，并回删总表整行（先备份、核对标题、删后复核行数）。
 - **门禁 C**：下架剔除、尺寸三特殊、JAN 存疑当场报用户，不擅自决定。
 > 识别与 JAN 四重验证见 `references/03_field_scrape.md`。

@@ -13,7 +13,7 @@ start_row 是 0-based（4 = 表格第 5 行）。
 """
 import sys, os, json, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import load_config, cfg_float, cfg_int
+from common import load_config, cfg_float, cfg_int, norm_color
 
 
 def price(cost, markup, step):
@@ -37,7 +37,7 @@ def main():
     for i, f in enumerate(fields):
         r = start + i
         p = price(f["cost"], markup, step)
-        pairs = [(cols[0], f["title"]), (cols[1], str(f["color"])), (cols[2], str(p))]
+        pairs = [(cols[0], f["title"]), (cols[1], norm_color(f["color"])), (cols[2], str(p))]
         if str(f["dia"]).strip() != "":
             pairs.append((cols[3], str(f["dia"]).strip()))
         else:
@@ -53,7 +53,7 @@ def main():
                         "cell_pic_info": {"tag": "sheet_pic_type_attachment",
                                           "pic_content": f["oid"],
                                           "width": -1, "height": -1}})
-        table.append({"row": r, "title": f["title"], "color": f["color"],
+        table.append({"row": r, "title": f["title"], "color": norm_color(f["color"]),
                       "cost": f["cost"], "price": p, "dia": f["dia"], "jan": f["jan"]})
 
     tp, pp = prefix + "_text.json", prefix + "_pic.json"
