@@ -182,6 +182,10 @@ AI 输出作业报告（新增/删除/剔除/下架/JAN存疑/袋价样例）→
 ```bash
 "$PY" "$R" status run=<run>; "$PY" "$R" failpoint run=<run>
 ```
+- **⚠️ 流程全部完成后必须关闭本项目后台保活进程**（用户 2026-11-26 明确要求：每次整条流程跑完都要关）。
+  - 仅关闭命令行含 `skills/供应商表格抓取/scripts/keep_browser.py` 的 python 进程，**严禁误杀其他项目的 python**（如 pdd_batch_v3 拼多多发布进程）。
+  - 用 PowerShell 按 CommandLine 精确匹配 PID 后 `Stop-Process`，删掉多余保活实例；CDP 9333 的浏览器可一并关闭。
+  - 中途因风控/门禁暂停时不要关（流程未结束）；只有全流程落地复核通过后执行。
 
 ---
 
